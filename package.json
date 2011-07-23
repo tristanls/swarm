@@ -1,0 +1,7 @@
+{ "name" : "swarm"
+, "description" : "It cannot possibly go wrong"
+, "version" : "0.0.1-beta"
+, "homepage" : "https://github.com/tristanls/swarm"
+, "author" : "Tristan Slominski <tristan.slominski@gmail.com> (http://github.com/tristanls)"
+, "engines" : { "node" : ">=0.4.8 <0.5.0" }
+}
