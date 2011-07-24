@@ -1,9 +1,9 @@
 { "name" : "swarm"
 , "description" : "It cannot possibly go wrong"
-, "version" : "0.0.1"
+, "version" : "0.0.1-pre"
 , "homepage" : "https://github.com/tristanls/swarm"
 , "author" : "Tristan Slominski <tristan.slominski@gmail.com> (http://github.com/tristanls)"
-, "bin" : "./bin/swarm" }
+, "bin" : "./bin/swarm"
 , "repository" :
   { "type" : "git"
   , "url" : "http://github.com/tristanls/swarm.git" }
