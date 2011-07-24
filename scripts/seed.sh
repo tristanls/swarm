@@ -138,6 +138,43 @@ ufw insert 1 limit in proto tcp from any to any port 22
 ufw logging on
 ufw --force enable
 
+# Install git
+
+apt-get install git-core -y
+
+# Install build tools ( needed to build node )
+
+apt-get install build-essential -y
+
+# Install libssl-dev ( needed to build node )
+
+apt-get install libssl-dev -y
+
+# Install node
+
+cd /opt
+git clone --depth 1 git://github.com/joyent/node.git
+cd node
+git checkout origin/v0.4
+./configure --prefix=/opt/node
+make
+make install
+echo 'export PATH=/opt/node/bin:$PATH' >> /etc/bash.bashrc
+# Because the above is only good once script finishes, need to
+#  export path also in our current environment
+export PATH=/opt/node/bin:$PATH
+
+# Install npm
+
+cd /opt
+git clone http://github.com/isaacs/npm.git
+cd npm
+make install
+	
+# Install swarm
+
+npm install swarm
+
 # Check if we need to reboot after all the changes we made
 
 if [ -e /var/run/reboot-required ]; then
