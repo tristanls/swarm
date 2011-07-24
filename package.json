@@ -1,6 +1,6 @@
 { "name" : "swarm"
 , "description" : "It cannot possibly go wrong"
-, "version" : "0.0.2-beta"
+, "version" : "0.0.1"
 , "homepage" : "https://github.com/tristanls/swarm"
 , "author" : "Tristan Slominski <tristan.slominski@gmail.com> (http://github.com/tristanls)"
 , "bin" : "./bin/swarm" }
