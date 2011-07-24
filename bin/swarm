@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+
+var path = require( 'path' );
+var swarm = require( path.join( __dirname, "../swarm.js" ) );
+
+var executableName = path.basename( __filename );
+
+var usage = executableName;
+var help = [
+  usage,
+  "",
+  "Options:",
+  "  -h, --help        Displays this information",
+  "  -v, --version     Displays version information",
+  ""
+].join( '\n' );
+
+// Retrieve command-line parameters
+var arg, args = [], argv = process.argv.slice( 2 ),
+    options = {
+      input: []
+    };
+
+// Parse command-line parameters
+while ( arg = argv.shift() ) {
+  if ( arg === __filename ) continue;
+  
+  if ( arg[ 0 ] !== '-' ) {
+    options.input.push( arg );
+  } else {
+    arg = arg.match( /^--?(.+)/ )[ 1 ];
+    
+    switch ( arg ) {
+      case 'help':
+      case 'h':
+        console.log( usage );
+        process.exit( 0 );
+        break;
+      case 'version':
+      case 'v':
+        console.log( [ executableName, swarm.version ].join( ' ' ) );
+        process.exit( 0 );
+        break;
+    }
+  }
+}
