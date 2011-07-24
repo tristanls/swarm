@@ -160,9 +160,11 @@ git checkout origin/v0.4
 make
 make install
 echo 'export PATH=/opt/node/bin:$PATH' >> /etc/bash.bashrc
+echo 'export NODE_PATH=/opt/node:/opt/node/lib/node_modules' >> /etc/bash.bashrc
 # Because the above is only good once script finishes, need to
 #  export path also in our current environment
 export PATH=/opt/node/bin:$PATH
+export NODE_PATH=/opt/node:/opt/node/lib/node_modules
 
 # Install npm
 
@@ -173,7 +175,8 @@ make install
 	
 # Install swarm
 
-npm install swarm
+cd /
+npm -g install swarm
 
 # Check if we need to reboot after all the changes we made
 
