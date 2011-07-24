@@ -4,5 +4,8 @@
 , "homepage" : "https://github.com/tristanls/swarm"
 , "author" : "Tristan Slominski <tristan.slominski@gmail.com> (http://github.com/tristanls)"
 , "bin" : "./bin/swarm" }
+, "repository" :
+  { "type" : "git"
+  , "url" : "http://github.com/tristanls/swarm.git" }
 , "engines" : { "node" : ">=0.4.8 <0.5.0" }
 }
