@@ -1,7 +1,10 @@
-exports.version = "0.0.1-pre";
-
-var path = require( 'path' ), 
+var fs = require( 'fs' ),
+    path = require( 'path' ), 
     spawn = require( 'child_process' ).spawn;
+
+var packageJson = JSON.parse( fs.readFileSync( __dirname + '/package.json' ) );
+
+exports.version = packageJson.version;
 
 exports.selfTest = function( reporter ) {
   if ( ! reporter ) { 
@@ -106,7 +109,7 @@ exports.swarm = function( executableName, argv ) {
           break;
         case 'version':
         case 'v':
-          console.log( [ executableName, swarm.version ].join( ' ' ) );
+          console.log( [ executableName, exports.version ].join( ' ' ) );
           process.exit( 0 );
           break;
       } // switch ( arg )
