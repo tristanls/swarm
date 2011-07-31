@@ -25,9 +25,9 @@ function randpass() {
 pass=`randpass`
 echo "root:$pass" | chpasswd
 
-# Create swarm user, without home directory and don't ask for password
+# Create swarm user and don't ask for password
 
-adduser --gecos swarm,,, --no-create-home --disabled-login swarm
+adduser --gecos swarm,,, --disabled-login swarm
 
 # Set the swarm user to random large password
 
@@ -42,6 +42,11 @@ chmod 0440 /etc/sudoers.d/swarm
 # Create swarm directory
 
 mkdir /opt/swarm
+
+# Give swarm user control over /home/swarm
+
+chown -R swarm /home/swarm
+chgrp -R swarm /home/swarm
 
 # Update the system
 
@@ -177,6 +182,15 @@ make install
 
 cd /
 npm -g install swarm
+
+# Give swarm user control over node, npm, and swarm
+
+chown -R swarm /opt/node
+chgrp -R swarm /opt/node
+chown -R swarm /opt/npm
+chgrp -R swarm /opt/npm
+chown -R swarm /opt/swarm
+chgrp -R swarm /opt/swarm
 
 # Check if we need to reboot after all the changes we made
 
