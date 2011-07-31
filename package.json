@@ -1,13 +1,16 @@
 { "name" : "swarm"
 , "description" : "It cannot possibly go wrong"
-, "version" : "0.0.1-pre"
+, "version" : "0.0.1-pre2"
 , "homepage" : "https://github.com/tristanls/swarm"
 , "author" : "Tristan Slominski <tristan.slominski@gmail.com> (http://github.com/tristanls)"
 , "bin" : "./bin/swarm"
 , "repository" :
   { "type" : "git"
   , "url" : "http://github.com/tristanls/swarm.git" }
+, "scripts" :
+  { "postinstall" : "swarm self-test" }
 , "dependencies" :
-  { "vows" : "0.5.9" }
+  { "findit": "0.1.1"
+  , "vows" : "0.5.9" }
 , "engines" : { "node" : ">=0.4.8 <0.5.0" }
 }
