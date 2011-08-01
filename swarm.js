@@ -6,6 +6,92 @@ var packageJson = JSON.parse( fs.readFileSync( __dirname + '/package.json' ) );
 
 exports.version = packageJson.version;
 
+exports.initialize = function( seedconfigFile ) {
+  // initialization will first run swarm self-test, afterwards, it will proceed
+  // to read the .seedconfig.js file to see what to do next
+  
+  // we define the initialize function here, because we'll need to call it 
+  // after successful tests
+  var initialize = function() {
+    console.log( 'initializing...' );
+    // require seedconfig 
+    // see if we have an absolute path file or not
+    if ( ! seedconfigFile.match( /^(\/|\.\/|\.\.\/).+/ ) ) {
+      // not an absolute path, so add current directory
+      seedconfigFile = './' + seedconfigFile;
+    }
+    var seedconfig = require( seedconfigFile );
+    
+    // install dependencies
+    // only one for testing
+    for ( var dependency in seedconfig.dependencies ) {
+      var installer = spawn(
+        'sudo',
+        [ 'npm', '-g', 'install', dependency + '@' + seedconfig.dependencies[ dependency ] ],
+        { cwd: __dirname } );
+      
+      installer.stdout.on( 'data', function( data ) {
+        process.stdout.write( data );
+      });
+      
+      installer.stderr.on( 'data', function( data ) {
+        process.stderr.write( data );
+      });
+      
+      installer.on( 'exit', function( code ) {
+        var cloudservers = require( 'cloudservers' );
+        console.log( 'cloudservers ' + cloudservers.version );
+      });
+    }
+  };
+  
+  // run swarm self test
+  var runner = spawn(
+    'swarm',
+    [ 'self-test', '--json' ],
+    { cwd: __dirname } );
+  
+  var results = '';
+  
+  runner.stdout.on( 'data', function( data ) {
+    results += data;
+  });
+  
+  runner.stderr.on( 'data', function( data ) {
+    results += data;
+  });
+  
+  runner.on( 'exit', function( code ) {    
+    // results now contains all output
+    results = results.split( '\n' ); // split results back into lines
+    results.pop(); // get rid of empty line at the end
+    // look backwards ( since finish will probably be the last line ) for success or failure
+    for ( var i = results.length - 1; i >= 0; i-- ) {
+      var finish = JSON.parse( results[ i ] );
+      if ( finish && finish.length > 0 && finish[ 0 ] == 'finish' ) {
+        // we found the result line
+        // ["finish",{"honored":1,"broken":0,"errored":0,"pending":0,"total":1,"time":0006}]
+        var res = finish[ 1 ];
+        if ( res.broken == 0 && res.errored == 0 && res.pending == 0 ) {
+          // no failures!
+          console.log( 'swarm ok' );
+        } else {
+          // TODO: send the log to control server or some central logging system
+          //console.log( results.join( '\n' ) );
+          console.log( 'swarm error, aborting...' );
+          process.exit( 0 );
+        }
+        break; // found what we were looking for
+      }
+      // if we got here, we did not find finish results, fail!
+      console.log( 'swarm error, aborting...' );
+      process.exit( 0 );
+    }
+    // made it through tests, continue initialization
+    initialize();
+  });
+};
+
 exports.selfTest = function( reporter ) {
   if ( ! reporter ) { 
     reporter = '--json'; // set default reporter to --json
@@ -31,7 +117,7 @@ exports.selfTest = function( reporter ) {
       process.stderr.write( data );
     });
     
-    runner.on( 'exit', function( code ) {
+    runner.on( 'exit', function( code ) {    
       process.exit( code );
     });
   }); // finder.on( 'end' )
@@ -48,6 +134,7 @@ exports.swarm = function( executableName, argv ) {
   var commands = [
     "commands:",
     "  help              Shows help for specific command",
+    "  initialize        Initializes the swarm node from .seedconfig.js",
     "  self-test         Executes swarm self-test suite after installation",
     "",
   ].join( '\n' );
@@ -68,6 +155,10 @@ exports.swarm = function( executableName, argv ) {
       "",
       commands
     ].join( '\n' ),
+    'initialize': [
+      "usage: " + executableName + " initialize seedconfig-file",
+      ""
+    ].join( '\n' ),
     'self-test': [
       "usage: " + executableName + " self-test [options]",
       "",
@@ -83,6 +174,10 @@ exports.swarm = function( executableName, argv ) {
   var arg, args = [], options = { input: [] };
   
   // Parse command-line parameters
+  if ( argv.length == 0 ) {
+    console.log( help );
+    process.exit( 0 );
+  }
   while ( arg = argv.shift() ) {
     if ( arg === executableName ) continue;
     
@@ -91,8 +186,20 @@ exports.swarm = function( executableName, argv ) {
       switch ( arg ) {
         case 'help':
           var command = argv.shift();
+          if ( ! command ) {
+            console.log( usage );
+            process.exit( 0 );
+          }
           console.log( commandHelp[ command ] );
           process.exit( 0 );
+          break;
+        case 'initialize':
+          var seedconfigFile = argv.shift();
+          if ( ! seedconfigFile ) {
+            console.log( commandHelp[ 'initialize' ] );
+            process.exit( 0 );
+          }
+          exports.initialize( seedconfigFile );
           break;
         case 'self-test':
           exports.selfTest( argv.shift() );

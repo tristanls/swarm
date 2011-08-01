@@ -1,15 +1,24 @@
 #!/bin/bash
 
 # USAGE:
-usage="Usage: $0 ssh-authorized-key-file"
+usage="Usage: $0 ssh-authorized-key-file seedconfig-file"
 
 # DESCRIPTION:
 #   Bootstraps a raw Ubuntu installation for swarm
 #   1. updates the system
 #   2. installs UFW
 #   3. locks down the machine allowing only port 22 ssh access by 'swarm'
+#   4. installs node
+#   5. installs npm
+#   6. installs swarm
+#   7. runs swarm initialize script using seedconfig-file
+#   8. reboots if required
 
 if [ -z $1 ]; then
+	echo $usage
+	exit 1
+fi
+if [ ! -e $2 ]; then
 	echo $usage
 	exit 1
 fi
@@ -42,6 +51,10 @@ chmod 0440 /etc/sudoers.d/swarm
 # Create swarm directory
 
 mkdir /opt/swarm
+
+# Copy the configuration file to /opt/swarm/.seedconfig.js
+
+cat $2 >> /opt/swarm/.seedconfig.js
 
 # Give swarm user control over /home/swarm
 
@@ -177,11 +190,6 @@ cd /opt
 git clone http://github.com/isaacs/npm.git
 cd npm
 make install
-	
-# Install swarm
-
-cd /
-npm -g install swarm
 
 # Give swarm user control over node, npm, and swarm
 
@@ -191,6 +199,14 @@ chown -R swarm /opt/npm
 chgrp -R swarm /opt/npm
 chown -R swarm /opt/swarm
 chgrp -R swarm /opt/swarm
+	
+# Install swarm
+
+cd /
+npm -g install swarm
+# Currently there is a problem above in that it runs as 'nobody' user, which
+# prevents the postinstall script initialized from 'spawn' to install anything
+# due to lack of permissions
 
 # Check if we need to reboot after all the changes we made
 
