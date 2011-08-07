@@ -25,9 +25,11 @@ exports.initialize = function( seedconfigFile ) {
     // install dependencies
     // only one for testing
     for ( var dependency in seedconfig.dependencies ) {
+      console.log( 'installing ' + dependency + '@' + seedconfig.dependencies[ dependency ] );
       var installer = spawn(
         'sudo',
-        [ 'npm', '-g', 'install', dependency + '@' + seedconfig.dependencies[ dependency ] ],
+        [ 'env', 'PATH=' + process.env.PATH, '/opt/node/bin/npm', '-g', 'install', 
+          dependency + '@' + seedconfig.dependencies[ dependency ] ],
         { cwd: __dirname } );
       
       installer.stdout.on( 'data', function( data ) {
@@ -40,7 +42,7 @@ exports.initialize = function( seedconfigFile ) {
       
       installer.on( 'exit', function( code ) {
         var cloudservers = require( 'cloudservers' );
-        console.log( 'cloudservers ' + cloudservers.version );
+        console.log( 'cloudservers ' + cloudservers.version.join( '.' ) );
       });
     }
   };
@@ -105,7 +107,7 @@ exports.selfTest = function( reporter ) {
   
   finder.on( 'end', function() {
     var runner = spawn(
-      'vows',
+      './node_modules/.bin/vows',
       [ reporter ].concat( specs ),
       { cwd: __dirname } );
     
@@ -134,7 +136,7 @@ exports.swarm = function( executableName, argv ) {
   var commands = [
     "commands:",
     "  help              Shows help for specific command",
-    "  initialize        Initializes the swarm node from .seedconfig.js",
+    "  initialize        Initializes the swarm node from .seedconfig.json",
     "  self-test         Executes swarm self-test suite after installation",
     "",
   ].join( '\n' );

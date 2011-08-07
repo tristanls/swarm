@@ -225,10 +225,10 @@ def main():
   
   # Install swarm
   os.chdir( '/' )
-  cmd( 'sudo /opt/node/bin/npm -g install swarm' )
+  cmd( 'sudo env PATH=$PATH /opt/node/bin/npm -g install swarm' )
   
   # Initialize swarm
-  cmd( 'sudo /opt/node/bin/swarm initialize /opt/swarm/.seedconfig.json' )
+  cmd( 'sudo env PATH=$PATH /opt/node/bin/swarm initialize /opt/swarm/.seedconfig.json' )
   
   # Check if we need to reboot after all the changes we made
   if os.path.exists( '/var/run/reboot-required' ):
