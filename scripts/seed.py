@@ -38,7 +38,9 @@ def main():
   parser.add_argument( 'auth_key_file', metavar = 'ssh-authorized-key-file', 
                        type = str, nargs = 1, help = 'swarm user public key' )
   parser.add_argument( 'seedconfig_file', metavar = 'seedconfig-file',
-                       type = str, nargs = 1, help = 'seed configuration file in json format' )
+                       type = str, nargs = 1, help = 'seed configuration file in node module format' )
+  parser.add_argument( 'seedjake_file', metavar = 'seedjake-file',
+                       type = str, nargs = 1, help = 'seed jakefile' )
   
   args = parser.parse_args()
   
@@ -67,6 +69,19 @@ def main():
     print args.seedconfig_file + ' is not a file'
     parser.print_usage()
     sys.exit()  
+    
+  args.seedjake_file = args.seedjake_file[ 0 ]
+  if not args.seedjake_file:
+    parser.print_usage()
+    sys.exit()
+  elif not os.path.exists( args.seedjake_file ):
+    print 'file ' + args.seedjake_file + ' does not exist'
+    parser.print_usage()
+    sys.exit()
+  elif not os.path.isfile( args.seedjake_file ):
+    print args.seedjake_file + ' is not a file'
+    parser.print_usage()
+    sys.exit() 
 
   change_password_to_random_large_password( 'root' )
   
@@ -82,8 +97,15 @@ def main():
   # Create swarm directory
   cmd( '/bin/mkdir /opt/swarm' )
   
-  # Copy the seed configuration file to /opt/swarm/.seedconfig.json
-  cmd( '/bin/cat ' + args.seedconfig_file + ' >> /opt/swarm/.seedconfig.json' )
+  # Create seeds directory
+  cmd( '/bin/mkdir /opt/swarm/seeds' )
+  
+  # Create seeds swarm directory
+  cmd( '/bin/mkdir /opt/swarm/seeds/swarm' )
+  
+  # Copy the seed configuration file and jakefile to /opt/swarm/
+  cmd( '/bin/cat ' + args.seedconfig_file + ' >> /opt/swarm/seeds/swarm/seed.js' )
+  cmd( '/bin/cat ' + args.seedjake_file + ' >> /opt/swarm/seeds/swarm/seed.jake.js' )
   
   # Give swarm user control over /home/swarm
   cmd( '/bin/chown -R swarm /home/swarm' )
@@ -228,7 +250,7 @@ def main():
   cmd( 'sudo env PATH=$PATH /opt/node/bin/npm -g install swarm' )
   
   # Initialize swarm
-  cmd( 'sudo env PATH=$PATH /opt/node/bin/swarm initialize /opt/swarm/.seedconfig.json' )
+  cmd( 'sudo env PATH=$PATH /opt/node/bin/swarm initialize /opt/swarm/seeds/swarm/seed.js /opt/swarm/seeds/swarm/seed.jake.js' )
   
   # Check if we need to reboot after all the changes we made
   if os.path.exists( '/var/run/reboot-required' ):

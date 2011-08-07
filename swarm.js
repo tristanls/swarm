@@ -6,13 +6,65 @@ var packageJson = JSON.parse( fs.readFileSync( __dirname + '/package.json' ) );
 
 exports.version = packageJson.version;
 
-exports.initialize = function( seedconfigFile ) {
+exports.initialize = function( seedconfigFile, seedjakeFile ) {
   // initialization will first run swarm self-test, afterwards, it will proceed
   // to read the .seedconfig.js file to see what to do next
   
+  var runJake = function( task, params ) {
+    console.log( 'running task ' + task + '...' );
+    var t = spawn(
+      'sudo',
+      [ 'env', 'PATH=' + process.env.PATH, '/opt/node/bin/jake', '-f', seedjakeFile,
+        task + '[' + params.join( ',' ) + ']' ]
+      );
+    
+    t.stdout.on( 'data', function( data ) {
+      process.stdout.write( data );
+    });
+    
+    t.stderr.on( 'data', function( data ) {
+      process.stderr.write( data );
+    });
+  };
+  
+  var configure = function( seedconfig ) {
+    for ( var task in seedconfig.configure ) {
+      runJake( task, seedconfig.configure[ task ] );
+    };
+  };
+  
+  var initializeADependency = function( dependency, seedconfig, complete ) {
+    console.log( 'installing ' + dependency + '@' + seedconfig.dependencies[ dependency ] );
+    
+    var installer = spawn(
+      'sudo',
+      [ 'env', 'PATH=' + process.env.PATH, '/opt/node/bin/npm', '-g', 'install', 
+        dependency + '@' + seedconfig.dependencies[ dependency ] ],
+      { cwd: __dirname } );
+      
+    installer.stdout.on( 'data', function( data ) {
+      process.stdout.write( data );
+    });
+    
+    installer.stderr.on( 'data', function( data ) {
+      process.stderr.write( data );
+    });
+    
+    installer.on( 'exit', function( code ) {
+      // verify that dependency was installed correctly
+      try {
+        require( dependency );
+      } catch ( e ) {
+        // installation failed
+        // TODO: do something...
+      }
+      complete();
+    });
+  };
+  
   // we define the initialize function here, because we'll need to call it 
   // after successful tests
-  var initialize = function() {
+  var initializeDependencies = function() {
     console.log( 'initializing...' );
     // require seedconfig 
     // see if we have an absolute path file or not
@@ -23,27 +75,15 @@ exports.initialize = function( seedconfigFile ) {
     var seedconfig = require( seedconfigFile );
     
     // install dependencies
-    // only one for testing
+    var ongoingInitializations = 0;
     for ( var dependency in seedconfig.dependencies ) {
-      console.log( 'installing ' + dependency + '@' + seedconfig.dependencies[ dependency ] );
-      var installer = spawn(
-        'sudo',
-        [ 'env', 'PATH=' + process.env.PATH, '/opt/node/bin/npm', '-g', 'install', 
-          dependency + '@' + seedconfig.dependencies[ dependency ] ],
-        { cwd: __dirname } );
-      
-      installer.stdout.on( 'data', function( data ) {
-        process.stdout.write( data );
-      });
-      
-      installer.stderr.on( 'data', function( data ) {
-        process.stderr.write( data );
-      });
-      
-      installer.on( 'exit', function( code ) {
-        var cloudservers = require( 'cloudservers' );
-        console.log( 'cloudservers ' + cloudservers.version.join( '.' ) );
-      });
+      ongoingInitializations += 1;
+      initializeADependency( dependency, seedconfig, function() {
+        ongoingInitializations -= 1;
+        if ( ongoingInitializations <= 0 ) {
+          configure( seedconfig );
+        }
+      } );
     }
   };
   
@@ -90,7 +130,7 @@ exports.initialize = function( seedconfigFile ) {
       process.exit( 0 );
     }
     // made it through tests, continue initialization
-    initialize();
+    initializeDependencies();
   });
 };
 
@@ -136,7 +176,7 @@ exports.swarm = function( executableName, argv ) {
   var commands = [
     "commands:",
     "  help              Shows help for specific command",
-    "  initialize        Initializes the swarm node from .seedconfig.json",
+    "  initialize        Initializes the swarm node from configuration and jake files",
     "  self-test         Executes swarm self-test suite after installation",
     "",
   ].join( '\n' );
@@ -158,7 +198,7 @@ exports.swarm = function( executableName, argv ) {
       commands
     ].join( '\n' ),
     'initialize': [
-      "usage: " + executableName + " initialize seedconfig-file",
+      "usage: " + executableName + " initialize seedconfig-file seedjake-file",
       ""
     ].join( '\n' ),
     'self-test': [
@@ -197,11 +237,16 @@ exports.swarm = function( executableName, argv ) {
           break;
         case 'initialize':
           var seedconfigFile = argv.shift();
+          var seedjakeFile = argv.shift();
           if ( ! seedconfigFile ) {
             console.log( commandHelp[ 'initialize' ] );
             process.exit( 0 );
           }
-          exports.initialize( seedconfigFile );
+          if ( ! seedjakeFile ) {
+            console.log( commandHelp[ 'initialize' ] );
+            process.exit( 0 );
+          }
+          exports.initialize( seedconfigFile, seedjakeFile );
           break;
         case 'self-test':
           exports.selfTest( argv.shift() );
