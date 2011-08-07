@@ -1,14 +1,12 @@
 { "name" : "swarm"
 , "description" : "It cannot possibly go wrong"
-, "version" : "0.0.1-pre5"
+, "version" : "0.0.1-pre6"
 , "homepage" : "https://github.com/tristanls/swarm"
 , "author" : "Tristan Slominski <tristan.slominski@gmail.com> (http://github.com/tristanls)"
 , "bin" : "./bin/swarm"
 , "repository" :
   { "type" : "git"
   , "url" : "http://github.com/tristanls/swarm.git" }
-, "scripts" :
-  { "postinstall" : "swarm initialize /opt/swarm/.seedconfig.js" }
 , "dependencies" :
   { "findit": "0.1.1"
   , "vows" : "0.5.9" }
