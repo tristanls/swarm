@@ -14,7 +14,8 @@ exports.initialize = function( seedconfigFile, seedjakeFile ) {
     console.log( 'running task ' + task + '...' );
     var t = spawn(
       'sudo',
-      [ 'env', 'PATH=' + process.env.PATH, '/opt/node/bin/jake', '-f', seedjakeFile,
+      [ 'env', 'PATH=' + process.env.PATH, 'NODE_PATH=' + process.env.NODE_PATH,
+        '/opt/node/bin/jake', '-f', seedjakeFile,
         task + '[' + params.join( ',' ) + ']' ]
       );
     
