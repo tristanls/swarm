@@ -6,88 +6,8 @@ var packageJson = JSON.parse( fs.readFileSync( __dirname + '/package.json' ) );
 
 exports.version = packageJson.version;
 
-exports.initialize = function( seedconfigFile, seedjakeFile ) {
-  // initialization will first run swarm self-test, afterwards, it will proceed
-  // to read the .seedconfig.js file to see what to do next
-  
-  var runJake = function( task, params ) {
-    console.log( 'running task ' + task + '...' );
-    var t = spawn(
-      'sudo',
-      [ 'env', 'PATH=' + process.env.PATH, 'NODE_PATH=' + process.env.NODE_PATH,
-        '/opt/node/bin/jake', '-f', seedjakeFile,
-        task + '[' + params.join( ',' ) + ']' ]
-      );
-    
-    t.stdout.on( 'data', function( data ) {
-      process.stdout.write( data );
-    });
-    
-    t.stderr.on( 'data', function( data ) {
-      process.stderr.write( data );
-    });
-  };
-  
-  var configure = function( seedconfig ) {
-    for ( var task in seedconfig.configure ) {
-      runJake( task, seedconfig.configure[ task ] );
-    };
-  };
-  
-  var initializeADependency = function( dependency, seedconfig, complete ) {
-    console.log( 'installing ' + dependency + '@' + seedconfig.dependencies[ dependency ] );
-    
-    var installer = spawn(
-      'sudo',
-      [ 'env', 'PATH=' + process.env.PATH, '/opt/node/bin/npm', '-g', 'install', 
-        dependency + '@' + seedconfig.dependencies[ dependency ] ],
-      { cwd: __dirname } );
-      
-    installer.stdout.on( 'data', function( data ) {
-      process.stdout.write( data );
-    });
-    
-    installer.stderr.on( 'data', function( data ) {
-      process.stderr.write( data );
-    });
-    
-    installer.on( 'exit', function( code ) {
-      // verify that dependency was installed correctly
-      try {
-        require( dependency );
-      } catch ( e ) {
-        // installation failed
-        // TODO: do something...
-      }
-      complete();
-    });
-  };
-  
-  // we define the initialize function here, because we'll need to call it 
-  // after successful tests
-  var initializeDependencies = function() {
-    console.log( 'initializing...' );
-    // require seedconfig 
-    // see if we have an absolute path file or not
-    if ( ! seedconfigFile.match( /^(\/|\.\/|\.\.\/).+/ ) ) {
-      // not an absolute path, so add current directory
-      seedconfigFile = './' + seedconfigFile;
-    }
-    var seedconfig = require( seedconfigFile );
-    
-    // install dependencies
-    var ongoingInitializations = 0;
-    for ( var dependency in seedconfig.dependencies ) {
-      ongoingInitializations += 1;
-      initializeADependency( dependency, seedconfig, function() {
-        ongoingInitializations -= 1;
-        if ( ongoingInitializations <= 0 ) {
-          configure( seedconfig );
-        }
-      } );
-    }
-  };
-  
+exports.initialize = function( seedModule ) {  
+
   // run swarm self test
   var runner = spawn(
     'swarm',
@@ -131,7 +51,7 @@ exports.initialize = function( seedconfigFile, seedjakeFile ) {
       process.exit( 0 );
     }
     // made it through tests, continue initialization
-    initializeDependencies();
+    require( seedModule ).seed();
   });
 };
 

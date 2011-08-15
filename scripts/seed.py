@@ -97,6 +97,9 @@ def main():
   # Create swarm directory
   cmd( '/bin/mkdir /opt/swarm' )
   
+  # Create swake directory
+  cmd( '/bin/mkdir /opt/swake' )
+  
   # Create seeds directory
   cmd( '/bin/mkdir /opt/swarm/seeds' )
   
@@ -217,11 +220,13 @@ def main():
   cmd( '/usr/bin/make install' )
   cmd( '/bin/echo "export PATH=/opt/node/bin:$PATH" >> /etc/bash.bashrc' )
   cmd( '/bin/echo "export NODE_PATH=/opt/node:/opt/node/lib/node_modules" >> /etc/bash.bashrc' )
+  cmd( '/bin/echo "export SWAKE_PATH=/opt/swake >> /etc/bash.bashrc' )
   # Because the above is only good once script finishes, we need to export
   #  path also in our current script execution environment
   current_path = os.getenv( 'PATH', 'Error' )
   os.environ[ 'PATH' ] = '/opt/node/bin:' + current_path
   os.environ[ 'NODE_PATH' ] = '/opt/node:/opt/node/lib/node_modules'
+  os.environ[ 'SWAKE_PATH' ] = '/opt/swake'
   
   # Install npm
   os.chdir( '/opt' )
@@ -229,11 +234,13 @@ def main():
   os.chdir( '/opt/npm' )
   cmd( '/usr/bin/make install' )
   
-  # Give swarm user control over node, npm, and swarm
+  # Give swarm user control over node, npm, swake, and swarm
   cmd( '/bin/chown -R swarm /opt/node' )
   cmd( '/bin/chgrp -R swarm /opt/node' )
   cmd( '/bin/chown -R swarm /opt/npm' )
   cmd( '/bin/chgrp -R swarm /opt/npm' )
+  cmd( '/bin/chown -R swarm /opt/swake' )
+  cmd( '/bin/chgrp -R swarm /opt/swake' )
   cmd( '/bin/chown -R swarm /opt/swarm' )
   cmd( '/bin/chgrp -R swarm /opt/swarm' )
   
@@ -249,11 +256,13 @@ def main():
   os.chdir( '/' )
   cmd( 'sudo env PATH=$PATH /opt/node/bin/npm -g install swarm' )
   
+  # Move swake files from swarm installation to SWAKE_PATH
+  cmd( '/bin/mv /opt/node/lib/node_modules/swarm/swake/* /opt/swake' )
+  
   # Initialize swarm
   cmd( 'sudo ' +
-       'env PATH=$PATH NODE_PATH=$NODE_PATH ' +
-       '/opt/node/bin/swarm initialize ' +
-       '/opt/swarm/seeds/swarm/seed.js /opt/swarm/seeds/swarm/seed.jake.js' )
+       'env PATH=$PATH NODE_PATH=$NODE_PATH SWAKE_PATH=$SWAKE_PATH' +
+       '/opt/node/bin/swarm initialize ' + '/opt/swarm/seeds/swarm/swarm.seed.js' )
   
   # Check if we need to reboot after all the changes we made
   if os.path.exists( '/var/run/reboot-required' ):

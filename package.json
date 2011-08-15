@@ -9,6 +9,7 @@
   , "url" : "http://github.com/tristanls/swarm.git" }
 , "dependencies" :
   { "findit": "0.1.1"
+  , "swake" : "x.x.x"
   , "vows" : "0.5.9" }
 , "engines" : { "node" : ">=0.4.8 <0.5.0" }
 }
