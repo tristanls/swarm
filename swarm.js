@@ -119,7 +119,7 @@ exports.swarm = function( executableName, argv ) {
       commands
     ].join( '\n' ),
     'initialize': [
-      "usage: " + executableName + " initialize seedconfig-file seedjake-file",
+      "usage: " + executableName + " initialize SEEDFILE",
       ""
     ].join( '\n' ),
     'self-test': [
@@ -157,17 +157,12 @@ exports.swarm = function( executableName, argv ) {
           process.exit( 0 );
           break;
         case 'initialize':
-          var seedconfigFile = argv.shift();
-          var seedjakeFile = argv.shift();
-          if ( ! seedconfigFile ) {
+          var seedFile = argv.shift();
+          if ( ! seedFile ) {
             console.log( commandHelp[ 'initialize' ] );
             process.exit( 0 );
           }
-          if ( ! seedjakeFile ) {
-            console.log( commandHelp[ 'initialize' ] );
-            process.exit( 0 );
-          }
-          exports.initialize( seedconfigFile, seedjakeFile );
+          exports.initialize( seedFile );
           break;
         case 'self-test':
           exports.selfTest( argv.shift() );

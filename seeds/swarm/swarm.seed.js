@@ -10,4 +10,4 @@ swake.swake( 'seed:createControlCluster',
   
 }); // seed:loadDependency
 
-};
+}; // exports.seed

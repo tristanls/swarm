@@ -37,10 +37,8 @@ def main():
   ) # ArgumentParser
   parser.add_argument( 'auth_key_file', metavar = 'ssh-authorized-key-file', 
                        type = str, nargs = 1, help = 'swarm user public key' )
-  parser.add_argument( 'seedconfig_file', metavar = 'seedconfig-file',
+  parser.add_argument( 'seed_file', metavar = 'seed-file',
                        type = str, nargs = 1, help = 'seed configuration file in node module format' )
-  parser.add_argument( 'seedjake_file', metavar = 'seedjake-file',
-                       type = str, nargs = 1, help = 'seed jakefile' )
   
   args = parser.parse_args()
   
@@ -57,16 +55,16 @@ def main():
     parser.print_usage()
     sys.exit()
     
-  args.seedconfig_file = args.seedconfig_file[ 0 ]
-  if not args.seedconfig_file:
+  args.seed_file = args.seed_file[ 0 ]
+  if not args.seed_file:
     parser.print_usage()
     sys.exit()
-  elif not os.path.exists( args.seedconfig_file ):
-    print 'file ' + args.seedconfig_file + ' does not exist'
+  elif not os.path.exists( args.seed_file ):
+    print 'file ' + args.seed_file + ' does not exist'
     parser.print_usage()
     sys.exit()
-  elif not os.path.isfile( args.seedconfig_file ):
-    print args.seedconfig_file + ' is not a file'
+  elif not os.path.isfile( args.seed_file ):
+    print args.seed_file + ' is not a file'
     parser.print_usage()
     sys.exit()  
     
@@ -106,9 +104,8 @@ def main():
   # Create seeds swarm directory
   cmd( '/bin/mkdir /opt/swarm/seeds/swarm' )
   
-  # Copy the seed configuration file and jakefile to /opt/swarm/
-  cmd( '/bin/cat ' + args.seedconfig_file + ' >> /opt/swarm/seeds/swarm/seed.js' )
-  cmd( '/bin/cat ' + args.seedjake_file + ' >> /opt/swarm/seeds/swarm/seed.jake.js' )
+  # Copy the seed configuration file to /opt/swarm/
+  cmd( '/bin/cat ' + args.seed_file + ' >> /opt/swarm/seeds/swarm/_init.seed.js' )
   
   # Give swarm user control over /home/swarm
   cmd( '/bin/chown -R swarm /home/swarm' )
@@ -262,7 +259,7 @@ def main():
   # Initialize swarm
   cmd( 'sudo ' +
        'env PATH=$PATH NODE_PATH=$NODE_PATH SWAKE_PATH=$SWAKE_PATH' +
-       '/opt/node/bin/swarm initialize ' + '/opt/swarm/seeds/swarm/swarm.seed.js' )
+       '/opt/node/bin/swarm initialize ' + '/opt/swarm/seeds/swarm/_init.seed.js' )
   
   # Check if we need to reboot after all the changes we made
   if os.path.exists( '/var/run/reboot-required' ):
