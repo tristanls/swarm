@@ -67,19 +67,6 @@ def main():
     print args.seed_file + ' is not a file'
     parser.print_usage()
     sys.exit()  
-    
-  args.seedjake_file = args.seedjake_file[ 0 ]
-  if not args.seedjake_file:
-    parser.print_usage()
-    sys.exit()
-  elif not os.path.exists( args.seedjake_file ):
-    print 'file ' + args.seedjake_file + ' does not exist'
-    parser.print_usage()
-    sys.exit()
-  elif not os.path.isfile( args.seedjake_file ):
-    print args.seedjake_file + ' is not a file'
-    parser.print_usage()
-    sys.exit() 
 
   change_password_to_random_large_password( 'root' )
   
