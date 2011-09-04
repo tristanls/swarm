@@ -31,8 +31,9 @@ def main():
           4. installs node
           5. installs npm
           6. installs swarm
-          7. runs swarm initialize script using seedconfig-file
-          8. reboots if required
+          7. installs swake
+          8. runs swarm initialize script using seed_file
+          9. reboots if required
           """ ) # description
   ) # ArgumentParser
   parser.add_argument( 'auth_key_file', metavar = 'ssh-authorized-key-file', 
@@ -228,6 +229,20 @@ def main():
   cmd( '/bin/chown -R swarm /opt/swarm' )
   cmd( '/bin/chgrp -R swarm /opt/swarm' )
   
+  # Install swarm
+  os.chdir( '/' )
+  cmd( '/opt/node/bin/npm -g install swarm' )
+  
+  # Give swarm user control over installed swarm package ( so we can move swake files )
+  cmd( '/bin/chown -R swarm /opt/node/lib/node_modules/swarm' )
+  cmd( '/bin/chgrp -R swarm /opt/node/lib/node_modules/swarm' )
+  
+  # Move swake files from swarm installation to SWAKE_PATH
+  cmd( '/bin/mv /opt/node/lib/node_modules/swarm/swake/* /opt/swake' )
+  
+  # Install swake
+  cmd( '/opt/node/bin/npm -g install swake' )
+  
   # Become swarm user
   try:
     uid = pwd.getpwnam( 'swarm' )[ 2 ]
@@ -235,13 +250,6 @@ def main():
   except OSError:
     sys.stderr.write( 'error: unable to become swarm user, stopping...' )
     sys.exit()
-  
-  # Install swarm
-  os.chdir( '/' )
-  cmd( 'sudo env PATH=$PATH /opt/node/bin/npm -g install swarm' )
-  
-  # Move swake files from swarm installation to SWAKE_PATH
-  cmd( '/bin/mv /opt/node/lib/node_modules/swarm/swake/* /opt/swake' )
   
   # Initialize swarm
   cmd( 'sudo ' +
