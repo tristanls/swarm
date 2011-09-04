@@ -243,6 +243,10 @@ def main():
   # Install swake
   cmd( '/opt/node/bin/npm -g install swake' )
   
+  # Give swarm user control over installed swake package
+  cmd( '/bin/chown -R swarm /opt/node/lib/node_modules/swake' )
+  cmd( '/bin/chgrp -R swarm /opt/node/lib/node_modules/swake' )
+  
   # Become swarm user
   try:
     uid = pwd.getpwnam( 'swarm' )[ 2 ]
