@@ -253,7 +253,7 @@ def main():
   
   # Initialize swarm
   cmd( 'sudo ' +
-       'env PATH=$PATH NODE_PATH=$NODE_PATH SWAKE_PATH=$SWAKE_PATH' +
+       'env PATH=$PATH NODE_PATH=$NODE_PATH SWAKE_PATH=$SWAKE_PATH ' +
        '/opt/node/bin/swarm initialize ' + '/opt/swarm/seeds/swarm/_init.seed.js' )
   
   # Check if we need to reboot after all the changes we made
