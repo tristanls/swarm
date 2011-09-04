@@ -3,6 +3,7 @@ var assert = require( 'assert' ),
     exec = require( 'child_process' ).exec,
     findit = require( 'findit' ),
     fs = require( 'fs' ),
+    path = require( 'path' ),
     vows = require( 'vows' );
 
 vows.describe( 'swarm' ).addBatch( {
@@ -341,4 +342,44 @@ vows.describe( 'swarm' ).addBatch( {
     
   } // file permissions
   
+}).addBatch( {
+  
+  'seeds': {
+    
+    'swarm': {
+    
+      '_init': {
+        
+        topic: '/opt/swarm/seeds/swarm/_init.seed.js',
+        'seed should be present': function( topic ) {
+          
+          path.exists( topic, function( exists ) {
+            
+            assert.isTrue( exists );
+            
+          }); 
+          
+        } // should be present
+        
+      }, // _init
+      
+      'swarm': {
+        
+        topic: '/opt/swarm/seeds/swarm/swarm.seed.js',
+        'seed should be present': function( topic ) {
+          
+          path.exists( topic, function( exists ) {
+            
+            assert.isTrue( exists );
+            
+          }); 
+          
+        } // should be present
+        
+      } // swarm
+
+    } // swarm
+    
+  } // seeds
+
 }).export( module );
