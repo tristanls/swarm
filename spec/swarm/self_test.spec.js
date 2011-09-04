@@ -164,49 +164,49 @@ vows.describe( 'swarm' ).addBatch( {
       
     }, // topic
     
-    '/opt/node directory and contents': {
-      
-      topic: function( uid, gid ) {
-        
-        var contents = [];
-        
-        var promise = new( events.EventEmitter );
-        
-        var finder = findit.find( '/opt/node' );
-        
-        finder.on( 'path', function( path ) {
-         
-          contents.push( path );
-          
-        });
-        
-        finder.on( 'end', function() {
-          
-          promise.emit( 'success', contents, uid, gid );
-          
-        });
-        
-        return promise;
-        
-      }, // topic
-      'should belong to swarm user and swarm group': 
-        function( error, contents, uid, gid ) {
-        
-        for ( var i = 0; i < contents.length; i++ ) {
-          
-          fs.stat( contents[ i ], function( error, stats ) {
-            
-            assert.equal( error, undefined );
-            assert.equal( stats.uid, uid );
-            assert.equal( stats.gid, gid );
-            
-          });
-          
-        } // for contents
-
-      } // stat /opt/node
-      
-    }, // /opt/node
+//    '/opt/node directory and contents': {
+//      
+//      topic: function( uid, gid ) {
+//        
+//        var contents = [];
+//        
+//        var promise = new( events.EventEmitter );
+//        
+//        var finder = findit.find( '/opt/node' );
+//        
+//        finder.on( 'path', function( path ) {
+//         
+//          contents.push( path );
+//          
+//        });
+//        
+//        finder.on( 'end', function() {
+//          
+//          promise.emit( 'success', contents, uid, gid );
+//          
+//        });
+//        
+//        return promise;
+//        
+//      }, // topic
+//      'should belong to swarm user and swarm group': 
+//        function( error, contents, uid, gid ) {
+//        
+//        for ( var i = 0; i < contents.length; i++ ) {
+//          
+//          fs.stat( contents[ i ], function( error, stats ) {
+//            
+//            assert.equal( error, undefined );
+//            assert.equal( stats.uid, uid );
+//            assert.equal( stats.gid, gid );
+//            
+//          });
+//          
+//        } // for contents
+//
+//      } // stat /opt/node
+//      
+//    }, // /opt/node
     
     '/opt/npm directory and contents': {
       
